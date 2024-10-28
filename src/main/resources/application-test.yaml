@@ -1,0 +1,15 @@
+spring.cache.type: none
+spring:
+  init:
+    mode: always
+
+  liquibase:
+    changeLog: "classpath:db/changelog_test.sql"
+#  datasource:
+#    url: jdbc:h2:mem:jira-test
+#    username: SA
+#    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: none

@@ -2,6 +2,8 @@ spring.cache.type: none
 spring:
   init:
     mode: always
+  liquibase:
+    changeLog: "classpath:db/changelog_test.sql"
   datasource:
     url: jdbc:postgresql://localhost:5433/jira-test
     username: jira

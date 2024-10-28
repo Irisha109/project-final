@@ -8,15 +8,21 @@ import com.javarush.jira.common.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.ProblemDetail;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.h2.tools.Server;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -52,6 +58,26 @@ public class AppConfig {
         return env.acceptsProfiles(Profiles.of("test"));
     }
 
+    @Profile("test")
+    @ConfigurationProperties("application-test.yaml")
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public Server h2Server() throws SQLException {
+        return Server.createTcpServer("-tcp", "-tcpAllowOthers", "-tcpPort", "9092");
+    }
+
+
+    @Profile("test")
+    @Bean
+    public DataSource getDataSource() {
+        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        dataSourceBuilder.driverClassName("org.h2.Driver");
+        dataSourceBuilder.url("jdbc:h2:mem:jira-test");
+        dataSourceBuilder.username("SA");
+        dataSourceBuilder.password("");
+
+        return dataSourceBuilder.build();
+    }
+
     @Autowired
     void configureAndStoreObjectMapper(ObjectMapper objectMapper) {
         objectMapper.registerModule(new Hibernate5JakartaModule());
@@ -66,4 +92,5 @@ public class AppConfig {
         @JsonAnyGetter
         Map<String, Object> getProperties();
     }
+
 }
