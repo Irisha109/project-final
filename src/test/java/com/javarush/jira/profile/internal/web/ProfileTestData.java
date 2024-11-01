@@ -12,8 +12,21 @@ import java.util.Set;
 public class ProfileTestData {
     public static MatcherFactory.Matcher<Profile> PROFILE_MATCHER =
             MatcherFactory.usingIgnoringFieldsComparator(Profile.class, "user");
+    public static MatcherFactory.Matcher<ProfileTo> PROFILE_TO_MATCHER =
+            MatcherFactory.usingIgnoringFieldsComparator(ProfileTo.class, "user");
 
-    public static ProfileTo USER_PROFILE_TO = new ProfileTo(null,
+    public static ProfileTo profileTo1 = new ProfileTo(null,
+            Set.of("assigned", "three_days_before_deadline", "two_days_before_deadline", "one_day_before_deadline", "deadline", "overdue"),
+            Set.of(new ContactTo("skype", "newSkype"),
+                    new ContactTo("mobile", "+380987654321"),
+                    new ContactTo("website", "new.com"),
+                    new ContactTo("github", "newGitHub"),
+                    new ContactTo("tg", "newTg"),
+                    new ContactTo("linkedin", "newLinkedin")));
+
+
+
+    public static ProfileTo USER_PROFILE_TO = new ProfileTo(1L,
             Set.of("assigned", "overdue", "deadline"),
             Set.of(new ContactTo("skype", "userSkype"),
                     new ContactTo("mobile", "+01234567890"),
@@ -28,11 +41,17 @@ public class ProfileTestData {
                 Set.of(new ContactTo("tg", "guestTg")));
     }
 
-    public static Profile getNew(long id) {
+    public static Profile getNew() {
+        long id = 99L;
         Profile profile = new Profile();
         profile.setId(id);
-        profile.setMailNotifications(14);
-        profile.setContacts(Set.of(new Contact(id, "tg", "guestTg")));
+        profile.setMailNotifications(63);
+        profile.setContacts(Set.of(new Contact(id, "skype", "newSkype"),
+                new Contact(id, "mobile", "+380987654321"),
+                new Contact(id, "website", "new.com"),
+                new Contact(id, "github", "newGitHub"),
+                new Contact(id, "tg", "newTg"),
+                new Contact(id, "linkedin", "newLinkedin")));
         return profile;
     }
 

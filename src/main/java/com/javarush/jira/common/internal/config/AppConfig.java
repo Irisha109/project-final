@@ -5,24 +5,26 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule;
 import com.javarush.jira.common.util.JsonUtil;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.ProblemDetail;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.h2.tools.Server;
+
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
+
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -38,6 +40,7 @@ public class AppConfig {
 
     private final AppProperties appProperties;
     private final Environment env;
+
 
     @Bean("mailExecutor")
     Executor getAsyncExecutor() {
@@ -58,17 +61,31 @@ public class AppConfig {
         return env.acceptsProfiles(Profiles.of("test"));
     }
 
-    @Profile("test")
-    @ConfigurationProperties("application-test.yaml")
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public Server h2Server() throws SQLException {
-        return Server.createTcpServer("-tcp", "-tcpAllowOthers", "-tcpPort", "9092");
+
+
+
+
+    @Bean
+    @ConditionalOnProperty(value = "isProd()")
+    @ConfigurationProperties("application-prod.yaml")
+    public DataSource getProdDataSource(
+        @Value("${DB_USER_NAME}")String userName,
+         @Value("${DB_PASSWORD}")String password) {
+
+        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        dataSourceBuilder.driverClassName("org.postgresql.Driver");
+        dataSourceBuilder.url("jdbc:postgresql://localhost:5432/jira");
+        dataSourceBuilder.username(userName);
+        dataSourceBuilder.password(password);
+
+        return dataSourceBuilder.build();
     }
 
 
-    @Profile("test")
     @Bean
-    public DataSource getDataSource() {
+    @ConditionalOnProperty(value = "isTest()")
+    @ConfigurationProperties("application-test.yaml")
+    public DataSource getTestDataSource() {
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
         dataSourceBuilder.driverClassName("org.h2.Driver");
         dataSourceBuilder.url("jdbc:h2:mem:jira-test");
