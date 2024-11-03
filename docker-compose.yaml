@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+    image: jirarush:latest
+    container_name: app
+    ports:
+      - "8080:8080"
+    environment:
+
+      # DB
+       spring.datasource.url: jdbc:postgresql://db:5432/jira
+       spring.datasource.username: ${DB_USER_NAME}
+       spring.datasource.password: ${DB_PASSWORD}
+
+     # OAuth2
+       spring.security.oauth2.client.registration.github.client-id: ${GITHUB_CLIENT_ID}
+       spring.security.oauth2.client.registration.github.client-secret: ${GITHUB_CLIENT_SECRET}
+
+       spring.security.oauth2.client.registration.google.client-id: ${GOOGLE_CLIENT_ID}
+       spring.security.oauth2.client.registration.google.client-secret: ${GOOGLE_CLIENT_SECRET}
+
+       spring.security.oauth2.client.registration.gitlab.client-id: ${GITLAB_CLIENT_ID}
+       spring.security.oauth2.client.registration.gitlab.client-secret: ${GITLAB_CLIENT_SECRET}
+
+
+      # Mail
+       spring.mail.username: ${MAIL_USERNAME}
+       spring.mail.password: ${MAIL_PASSWORD}
+       spring.mail.port: ${MAIL_PORT}
+
+    networks:
+      - backend
+    depends_on:
+      - db
+
+
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_DB: jira
+      POSTGRES_USER: ${DB_USER_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+
+    ports:
+      - "80:80"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+
+    depends_on:
+      - app
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

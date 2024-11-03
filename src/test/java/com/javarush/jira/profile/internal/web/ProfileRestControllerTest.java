@@ -54,7 +54,7 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    void getVerify()  {
+    void getTest()  {
         AuthUser authUser = new AuthUser(userRepository.getById(1L));
         ProfileTo profileTo = profileController.get(authUser);
         Mockito.doAnswer(invocationOnMock -> profileTo)
